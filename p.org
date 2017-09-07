@@ -1,0 +1,1001 @@
+*  Cajoling the Bird
+
+  or
+  How We Squeezed More out of
+  Phoenix Pubsub
+
+  Simon Zelazny for Grindr LLC
+  @ ElixirConf 2017
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The team*
+
+** Rafal Studnicki      gh/studzien
+** Ben Brodie           gh/blbrodie
+** Toby Northcote-Smith
+** Simon Zelazny        gh/pzel
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The app*
+
+ Grindr is *the best* gay
+ dating app on the market
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+  [[./grindr-screen.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The problem?*
+
+ Stale presence indication
+ in the app
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The current architecture*
+
+  [[./stack-version0.dot.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *...and its shortcomings*
+
+
+ Ambiguous
+ Not real-time
+ Lower engagement
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *We want*
+
+
+ Clarity
+ Real-time relevance
+ Higher engagement
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Some solutions were explored*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Just update more frequently*
+
+ [[./smokestack.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Leverage $BIGCO's IoT offering*
+
+  [[./no-way.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Leverage the 'P' in XMPP*
+
+  [[./quixote.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The BEAM devs asked*
+
+
+ Have you heard…
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *…about the bird?*
+
+  [[./surfin-bird.jpg]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Phoenix Framework*
+
+
+ Open source
+ Modern codebase & tooling
+ Simple WebSocket-based protocol
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Phoenix Framework 🖤*
+
+
+ Has Presence built-in
+ …implemented with CRDTs
+ …with leaderless replication
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Phoenix Framework 🖤🖤🖤*
+
+
+ We're already running on the BEAM
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The Spike*
+
+
+  Time:         < 1day
+  Backend LOC:  < 50 + tests
+  Frontend LOC: < 200
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The Result*
+
+  (call-process "mplayer"
+  nil nil nil
+  "-fs" "./demo-movie.mov")
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *BUY-IN*
+
+
+ $$$
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 1: Bare Bones*
+
+ Simplest possible architecture
+
+ Clients subscribe to guys'
+ presence topics individually
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 1: Bare Bones*
+
+  [[./stack-version1.dot.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *It works!*
+
+ But can it withstand
+ production traffic?
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *What's with the load testing tools?*
+
+
+ Every BEAM shop seems to
+ roll their own
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *What's with the load testing tools?*
+
+
+ So did we
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *# file: scenarios/presence.pug*
+  :get_bootstrap,
+  :get_cascade,
+  :connect_to_presence,
+  :subscribe_to_neighbors_presences,
+  :listen_for_presence_updates,
+  :disconnect_from_presence
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Just follow 3 steps*
+
+ 1. Write a single scenario
+ 2. Run many in parallel
+ 3. Put metrics on everything!
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Load test!*
+
+  [[./buldog-loaders.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *…and hit the first snag*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Memory usage runs wild!*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Formulate hypothesis*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Think about client behavior*
+
+
+ Clients open *one channel*
+ per subscription
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *A LOT of channels*
+
+ Each channel does
+ very little work
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *A LOT of channels*
+
+ …and allocates
+ just a little bit
+ of memory
+
+ 
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *In aggregate*
+
+ That's a lot of memory.
+
+ :recon.proc_count(:memory, 100)
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Kent Beck says:*
+
+ Call your shots
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *We call it*
+
+ Bet-driven development
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *An experiment…*
+
+ Hibernate the channels after they
+ finish processing a message
+
+ {:noreply, socket, :hibernate}
+
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *…the result*
+
+ It works!
+ Memory usage is now reasonable
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Longer-term solution*
+
+
+ -env ERL_FULLSWEEP_AFTER 2
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *But!*
+
+ Client-side response times are
+ underwhelming
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Lots of flailing*
+
+ Going through
+ checklists in our head
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Eureka!*
+
+ Konrad Malawski - Need for Async:
+ https://www.youtube.com/
+ watch?v=Q_0z2v3QJg4#t=23m08s
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Reading socket data*
+
+ select vs. epoll
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The erlc switch:*
+
+ +K true
+
+  
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Call our shots*
+ 
+ Lots of sockets w/
+ little traffic each
+
+ vs.
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Call our shots*
+
+ Few sockets w/
+ massive traffic
+ each
+ 
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The real world responds*
+
+ Correct!
+
+ 
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Let's push it further*
+
+ Increase subscriptions per user
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+  *…and break it*
+
+ 64 GB RAM goes
+ like popcorn
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Question*
+
+ How do we reduce our
+ RAM footprint?
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 2*
+
+ Internal subscriptions
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *One channel per client*
+
+ [[./stack-version2.dot.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Use phx_requests*
+
+ To sign up for other presences
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Call our shots*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Call our shots*
+
+ Memory usage: WAY DOWN
+ CPU usage: WAY DOWN
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *More load!*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *and more!*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Until*
+
+ gen_server call :
+  timeout in Presence.track…
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Time to open up Phoenix.Pubsub
+  internals*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The Tracker Architecture*
+
+ A Tracker process (1 per node)
+ handles Presence information
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The Tracker Architecture*
+
+ Lots of data passes between the
+ Tracker processes
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The Tracker Architecture*
+
+ The single Tracker process
+ becomes a bottleneck
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 2*
+ 
+ [[./stack-version2.dot.png]]
+ 
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 2 (Tracker.list())*
+ 
+ [[./stack-version2-tracker.dot.png]]
+ 
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 2 (at scale)*
+ 
+ [[./stack-version2-tracker-scale.dot.png]]
+ 
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The solution?*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The (Elixir) solution?*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The (Elixir) solution?*
+
+ Share-nothing parallelism!
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The challenge*
+
+ How to distribute Presence load
+ across trackers?
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 3*
+
+ [[./stack-version3.dot.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Version 3 (at scale)*
+
+ [[./stack-version3-scale.dot.png]]
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Hacky implementation #1*
+
+ Macros!
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The code*
+
+ [[./macro.png]]
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The results*
+
+ IT WORKS!
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *More load!*
+
+ Let's try 200k simultaneous clients
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *More load!*
+
+ With *very large* subscription sets
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Event publish rates taper off*
+
+ CPU is not maxed out
+ Memory looks fine
+ Network is not saturated
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *What's up?*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Contention*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Where?*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *In the BEAM VM*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Enter lcnt*
+
+  [[./lcnt-desc.png]]
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Run at ~20-30% target load*
+
+ (Lock counting takes a toll
+ on the vm)
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *See where the VM waits*
+
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *pix_lock (process index)*
+
+ [[./lcnt-table.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *We are spawning too many*
+
+ short-lived processes
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Time to open up Phoenix.PubSub
+ internals*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Time to open up Phoenix.PubSub
+ internals*
+
+ (again)
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *do_broadcast*
+
+ ∀ broadcast message:
+   ∀ pubsub shard:
+     spawn a process to send msg
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Some quick math*
+
+ (let ((mpsec (* 8 1000))
+       (shards 128))
+    (* mpsec shards))
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *A MILLION PROCESSES*
+
+ [[./one-million.jpg]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The limits of parallelism*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Help the man behind the curtain*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Just loop over the shards*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Before*
+
+ [[./broadcast-before.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *After*
+
+ [[./broadcast-after.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Lock contention removed*
+
+ [[./lcnt-table-after.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *BUT....*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Tracker operations are slow*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *We need more data*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Put metrics on all interesting
+ function calls*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Run the system monitor*
+
+ :erlang.system_monitor(self(),
+   [{:long_schedule, 10},
+    {:long_gc, 10}])
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Monitor points to*
+
+  Phoenix.Tracker.State.merge/2
+    :maps.from_list/1
+    :maps.to_list/1
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *BIFs, reductions, and you*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Maps functions don't bump reds*
+
+ Why is that a problem?
+ 🖛 github.com/vinoski/bitwise
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Tracker's internals are map-heavy*
+
+ Enum interface calls
+
+ :maps.to & from_list
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *HALP! 🙉🙉🙉🙉🙉*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Erlang & Elixir Factory SF*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Lots of very knowledgeable folks*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Lukas Larsson (OTP Team) says*
+
+ use DIRTY BIFS
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *We wrote up some
+ synthetic benchmarks*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Wrote the dirty BIFs*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Called our shots*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *YES!*
+
+ The dirty BIFs *do*
+ make a difference
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *In the micro-benchmark only*
+
+ 🙈
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Dirty BIFs did not help*
+
+ In the large scheme of things
+
+ 
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Examine where the Tracker
+ spends its time*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+  
+  Tracker.track
+  Tracker.list
+  handle_info -> 
+    Tracker.handle_diff
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *GenServers, State and You*
+
+  @type t :: %State{
+    replica:  name,
+    context:  context,
+    *values:   values*, # ets_id
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *What's in a Tracker.list?*
+
+ def list(server_name, topic) do
+   server_name
+   |> GenServer.call({:list, topic})
+   |> State.get_by_topic(topic)
+   |> Enum.map(…)
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *GenServer.call*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *🐢*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Solution?*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Go dirty*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *An ets table by any other name*
+
+ still smells just as hacky
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ def new(srv_name, replica) do
+   reset_delta(%State{
+    replica:  name,
+    context:  context,
+    values: *table_name(srv_name)*,
+    ...
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Now we can access the data directly*
+
+ By virtue of publicly known names
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Bypass GenServer.call completely*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *We will get stale results*
+
+ if a replica goes down
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Tracker.dirty_list*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The effect*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Blazing fast presence tracking*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Can it do more?*
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Load up a torrent of users!*
+
+
+ 
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *The result*
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Achievement unlocked*
+
+
+ (On a Friday)
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *12 million events per minute*
+
+ [[./achievement-unlocked.png]]
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways*
+
+
+ Do the naive thing first
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways*
+
+
+ Don't trust microbenchmarks
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways*
+
+
+ Instrument your code
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways*
+
+
+ Look for bottlenecks
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways: Bottlenecks*
+
+
+ Singleton processes
+ GenServer.call()s
+ Counterproductive spawns
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways: Bottlenecks*
+
+
+ If in doubt:
+ LCNT is your friend and teacher
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways*
+
+
+ Engage the community
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways: Community*
+
+
+ Top BEAM experts at conferences
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways: Community*
+
+
+ Github
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Takeaways*
+
+
+ Read the source!
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Oh yeah, and*
+
+
+ …if you're interested
+ in this type of work…
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *We're hiring!*
+
+
+ jobs@grindr.com
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *And we're sitting*
+
+ right over there 🖙
+
+
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Thank you!*
+
+
+ 
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Questions?*
+
+ 
+
+* ⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺⎺
+ *Images*
+
+ Surfin bird: https://i.ytimg.com/vi/z0cdnYEmRkU/maxresdefault.jpg
+ One million: https://i.ytimg.com/vi/cmQLnBtDjbw/maxresdefault.jpg
+ Don Quixote: http://www.csdl.tamu.edu:8080/dqiDisplayInterface/displayMidImage.jsp?edition=1&image=1620-London-Blount-Addenda-01-001-t.jpg
+ Smokestack: https://unsplash.com/search/photos/smokestack?photo=zAITDJYV09w
